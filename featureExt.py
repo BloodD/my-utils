@@ -23,6 +23,7 @@ def main():
     print "total time: %s"%(time.time()-st)
 
 def load_train(filename):
+    log = open('log','w')
     with open(filename,'rb') as myCsvFile:
         TruePaperIds = []
         FalsePaperIds = []
@@ -32,6 +33,7 @@ def load_train(filename):
         content.next()
         for AuthorId,ConfirmedPaperIds,DeletedPaperIds in content:
             print AuthorId
+            log.write(AuthorId)
             coauthor = []
             papers = author_dict.get(int(AuthorId))
             #print papers
@@ -39,24 +41,45 @@ def load_train(filename):
             for p in paper:
                 coa = paper_dict.get(int(p))
                # print p,'--->',coa
-                coauthor.extend(coa)
-            coauthor = np.unique(coauthor)
-            print coauthor
+                coa = np.unique(coa)
+                coauthor.extend(coa.tolist())
+            #coauthor = np.unique(coauthor)
+            #print coauthor
             
             cpaper = ConfirmedPaperIds.split()
             dpaper = DeletedPaperIds.split()
+            cc = []
+            dc = []
+            all = 0
             for cp in cpaper:
-                print int(cp)
+           #     print int(cp)
                 cpco = paper_dict.get(int(cp))
-                print cpco
                 cpco = np.unique(cpco)
-                co_au = coauthor[cpco!=int(AuthorId)]
-                print co_au
-                """
-                get co_author number as one feature.
-                """
-                break
-            break
+            #    print cpco
+                num = 0
+                for p in cpco:
+                    if p!=int(AuthorId):
+                        num += coauthor.count(p)
+           #     print num
+                cc.append(num)
+                all += num
+            log.write( 'total true  coauthor number:%s\n'%all)
+
+            alld = 0
+            for dp in dpaper:
+            #    print int(dp)
+                dpco = paper_dict.get(int(dp))
+             #   print dpco
+                dpco = np.unique(dpco)
+                num = 0
+                for p in dpco:
+                    if p!=int(AuthorId):
+                        num += coauthor.count(p)
+              #  print num
+                dc.append(num)
+                alld += num
+            log.write( 'total coauthor number:%s\n'%alld)
+            
 
             '''
             IdC = ConfirmedPaperIds.split(" ")
